@@ -1,0 +1,6 @@
+LIBRARY RdpInfo
+
+EXPORTS
+GetClassObject
+DestroyObject
+GetClassNames
