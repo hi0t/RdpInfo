@@ -1,0 +1,32 @@
+image: Visual Studio 2017
+
+configuration:
+  - Release
+
+environment:
+  matrix:
+  - platform: x86
+    cmake_generator: '-G "Visual Studio 15 2017" -A Win32'
+  - platform: x64
+    cmake_generator: '-G "Visual Studio 15 2017" -A x64'
+
+build_script:
+  - cmake -S . -B %appveyor_build_folder%\build %cmake_generator%
+  - cmake --build %appveyor_build_folder%\build --parallel --config %configuration%
+
+after_build:
+  - 7z a RdpInfo_%platform%.zip %appveyor_build_folder%\build\%configuration%\RdpInfo.dll
+
+artifacts:
+  - path: RdpInfo_%platform%.zip
+
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: LY7LVxr2/BvB0jXnZKC0yhjOD4lyjtyWrl8FTBgyqf0Ea246d54iNFj5ep08Er1w
+  artifact: /.*\.zip/
+  force_update: true
+  draft: false
+  prerelease: false
+  on:
+    APPVEYOR_REPO_TAG: true
