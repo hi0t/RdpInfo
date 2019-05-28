@@ -8,7 +8,7 @@ long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
     if (!*pInterface) {
         *pInterface= new RdpInfo;
-        return (long)*pInterface;
+        return 1;
     }
     return 0;
 }
@@ -65,19 +65,19 @@ bool RdpInfo::RegisterExtensionAs(WCHAR_T **wsExtensionName)
 
 long RdpInfo::GetNProps()
 {
-    return _propNames.size();
+    return static_cast<long>(_propNames.size());
 }
 
 long RdpInfo::FindProp(const WCHAR_T *wsPropName)
 {
     auto it = std::find(_propNames.begin(), _propNames.end(), wsPropName);
     if (it != _propNames.end()) {
-        return std::distance(_propNames.begin(), it);
+        return static_cast<long>(std::distance(_propNames.begin(), it));
     }
 
     it = std::find(_propNamesRu.begin(), _propNamesRu.end(), wsPropName);
     if (it != _propNamesRu.end()) {
-        return std::distance(_propNamesRu.begin(), it);
+        return static_cast<long>(std::distance(_propNamesRu.begin(), it));
     }
 
     return -1;
@@ -218,7 +218,7 @@ void *RdpInfo::wstringToMemory(const std::wstring &str) const
         return nullptr;
     }
 
-	_memory->AllocMemory(&strVal, len);
+	_memory->AllocMemory(&strVal, static_cast<unsigned long>(len));
     memcpy(strVal, str.c_str(), len);
     return strVal;
 }
@@ -227,7 +227,7 @@ void RdpInfo::wstringToVariant(const std::wstring &str, tVariant *val) const
 {
 	TV_VT(val) = VTYPE_PWSTR;
 	val->pstrVal = static_cast<char *>(wstringToMemory(str));
-	val->strLen = str.length();
+	val->strLen = static_cast<uint32_t>(str.length());
 }
 
 void RdpInfo::addError(unsigned short wcode, const std::wstring &source, const std::wstring &descr, int ec) const
