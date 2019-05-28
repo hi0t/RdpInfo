@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 #include "ComponentBase.h"
 #include "AddInDefBase.h"
@@ -39,19 +40,17 @@ public:
 private:
     enum { BASE_ERRNO = 7 };
 
-    enum Props
+    struct Property
     {
-        PropIsRemoteSession = 0,
-        PropRemoteAddress
+        std::wstring name;
+        std::wstring nameRu;
+        std::function<bool(tVariant *propVal)> getter;
+        std::function<bool(tVariant *propVal)> setter;
     };
 
-    const std::vector<std::wstring> _propNames = {
-        L"IsRemoteSession",
-        L"RemoteAddress"
-    };
-    const std::vector<std::wstring> _propNamesRu = {
-        L"УдаленнаяСессия",
-        L"УдаленныйАдрес"
+    const std::vector<Property> _properties = {
+        { L"IsRemoteSession", L"УдаленнаяСессия", std::bind(&RdpInfo::getIsRemoteSession, this, std::placeholders::_1), { } },
+        { L"RemoteAddress", L"УдаленныйАдрес", std::bind(&RdpInfo::getRemoteAddress, this, std::placeholders::_1), { } }
     };
 
     IAddInDefBase *_connect;
@@ -61,4 +60,6 @@ private:
     void *wstringToMemory(const std::wstring &str) const;
     void wstringToVariant(const std::wstring &str, tVariant *val) const;
     void addError(unsigned short wcode, const std::wstring &source, const std::wstring &descr, int ec) const;
+    bool getIsRemoteSession(tVariant *propVal);
+    bool getRemoteAddress(tVariant *propVal);
 };

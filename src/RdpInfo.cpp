@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
-#include <locale.h>
+#include <algorithm>
+#include <locale>
 #include "RdpInfo.h"
 #include "Wexception.h"
 
@@ -65,19 +66,23 @@ bool RdpInfo::RegisterExtensionAs(WCHAR_T **wsExtensionName)
 
 long RdpInfo::GetNProps()
 {
-    return static_cast<long>(_propNames.size());
+    return static_cast<long>(_properties.size());
 }
 
 long RdpInfo::FindProp(const WCHAR_T *wsPropName)
 {
-    auto it = std::find(_propNames.begin(), _propNames.end(), wsPropName);
-    if (it != _propNames.end()) {
-        return static_cast<long>(std::distance(_propNames.begin(), it));
+    auto it = std::find_if(_properties.begin(), _properties.end(),
+        [wsPropName](const Property &x) { return x.name == wsPropName; }
+    );
+    if (it != _properties.end()) {
+        return static_cast<long>(std::distance(_properties.begin(), it));
     }
 
-    it = std::find(_propNamesRu.begin(), _propNamesRu.end(), wsPropName);
-    if (it != _propNamesRu.end()) {
-        return static_cast<long>(std::distance(_propNamesRu.begin(), it));
+    it = std::find_if(_properties.begin(), _properties.end(),
+        [wsPropName](const Property &x) { return x.nameRu == wsPropName; }
+    );
+    if (it != _properties.end()) {
+        return static_cast<long>(std::distance(_properties.begin(), it));
     }
 
     return -1;
@@ -85,17 +90,18 @@ long RdpInfo::FindProp(const WCHAR_T *wsPropName)
 
 const WCHAR_T* RdpInfo::GetPropName(long lPropNum, long lPropAlias)
 {
-    if (lPropNum >= static_cast<long>(_propNames.size()))
+    if (lPropNum >= static_cast<long>(_properties.size())) {
         return nullptr;
+    }
 
     std::wstring propName;
 
     switch (lPropAlias) {
     case 0: // First language
-        propName = _propNames[lPropNum];
+        propName = _properties[lPropNum].name;
         break;
     case 1: // Second language
-        propName = _propNamesRu[lPropNum];
+        propName = _properties[lPropNum].nameRu;
         break;
     default:
         return nullptr;
@@ -106,62 +112,34 @@ const WCHAR_T* RdpInfo::GetPropName(long lPropNum, long lPropAlias)
 
 bool RdpInfo::GetPropVal(const long lPropNum, tVariant *pvarPropVal)
 {
-    switch (lPropNum)
-    {
-    case PropIsRemoteSession:
-        TV_VT(pvarPropVal) = VTYPE_BOOL;
-        TV_BOOL(pvarPropVal) = TerminalServicesSession::isRemoteSession();
-        break;
-    case PropRemoteAddress:
-        try {
-            wstringToVariant(_terminalSession.remoteAddress(), pvarPropVal);
-        } catch (const Wexception &e) {
-            addError(ADDIN_E_ATTENTION, ExtensionName, e.whatW(), e.code());
-            return false;
-        }
-        break;
-    default:
+    if (lPropNum >= static_cast<long>(_properties.size())) {
         return false;
     }
-
-    return true;
+    return _properties[lPropNum].getter(pvarPropVal);
 }
 
 bool RdpInfo::SetPropVal(const long lPropNum, tVariant *varPropVal)
 {
-    switch (lPropNum)
-    {
-    case PropIsRemoteSession:
-    case PropRemoteAddress:
-    default:
+    if (lPropNum >= static_cast<long>(_properties.size())) {
         return false;
     }
-
-    return true;
+    return _properties[lPropNum].setter(varPropVal);
 }
 
 bool RdpInfo::IsPropReadable(const long lPropNum)
 {
-    switch (lPropNum)
-    {
-    case PropIsRemoteSession:
-    case PropRemoteAddress:
-        return true;
-    default:
+    if (lPropNum >= static_cast<long>(_properties.size())) {
         return false;
     }
+    return static_cast<bool>(_properties[lPropNum].getter);
 }
 
 bool RdpInfo::IsPropWritable(const long lPropNum)
 {
-    switch (lPropNum)
-    {
-    case PropIsRemoteSession:
-    case PropRemoteAddress:
-        return false;
-    default:
+    if (lPropNum >= static_cast<long>(_properties.size())) {
         return false;
     }
+    return static_cast<bool>(_properties[lPropNum].setter);
 }
 
 long RdpInfo::GetNMethods()
@@ -235,4 +213,22 @@ void RdpInfo::addError(unsigned short wcode, const std::wstring &source, const s
     if (_connect) {
         _connect->AddError(wcode, source.c_str(), descr.c_str(), RESULT_FROM_ERRNO(ec));
     }
+}
+
+bool RdpInfo::getIsRemoteSession(tVariant *propVal)
+{
+    TV_VT(propVal) = VTYPE_BOOL;
+    TV_BOOL(propVal) = TerminalServicesSession::isRemoteSession();
+    return true;
+}
+
+bool RdpInfo::getRemoteAddress(tVariant *propVal)
+{
+    try {
+        wstringToVariant(_terminalSession.remoteAddress(), propVal);
+    } catch (const Wexception &e) {
+        addError(ADDIN_E_ATTENTION, ExtensionName, e.whatW(), e.code());
+        return false;
+    }
+    return true;
 }
