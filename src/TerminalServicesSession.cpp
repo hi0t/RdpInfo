@@ -48,7 +48,7 @@ std::wstring TerminalServicesSession::remoteAddress() const
     WINSTATIONREMOTEADDRESS address;
     HINSTANCE instWinSta = getInstWinsta();
     ULONG ReturnLen;
-    std::wstring str(INET6_ADDRSTRLEN, 0);
+    wchar_t str[INET6_ADDRSTRLEN];
 
     if (instWinSta == nullptr) {
         throw Wexception(L"winsta.dll not loaded");
@@ -71,12 +71,12 @@ std::wstring TerminalServicesSession::remoteAddress() const
     case AF_INET:
         in_addr ipv4;
         ipv4.S_un.S_addr = address.ipv4.in_addr;
-        InetNtopW(address.sin_family, &ipv4, &str[0], str.size());
+        InetNtopW(address.sin_family, &ipv4, str, sizeof(str));
         break;
     case AF_INET6:
         in6_addr ipv6;
         memcpy(&ipv6, address.ipv6.sin6_addr, sizeof(ipv6));
-        InetNtopW(address.sin_family, &ipv6, &str[0], str.size());
+        InetNtopW(address.sin_family, &ipv6, str, sizeof(str));
         break;
     default:
         throw Wexception(L"unknown address");
