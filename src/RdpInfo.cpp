@@ -226,9 +226,8 @@ bool RdpInfo::getRemoteAddress(tVariant *propVal)
 {
     try {
         wstringToVariant(_terminalSession.remoteAddress(), propVal);
-    } catch (const Wexception &e) {
-        addError(ADDIN_E_ATTENTION, ExtensionName, e.whatW(), e.code());
-        return false;
+    } catch (const Wexception &) {
+        TV_VT(propVal) = VTYPE_EMPTY;
     }
     return true;
 }
