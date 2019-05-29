@@ -2,6 +2,8 @@
 
 #include <ws2tcpip.h>
 #include <wtsapi32.h>
+#include <sstream>
+#include <iomanip>
 #include "TerminalServicesSession.h"
 #include "Wexception.h"
 
@@ -97,4 +99,41 @@ HINSTANCE TerminalServicesSession::getInstWinsta()
     }
 
     return _instWinsta;
+}
+
+std::wstring TerminalServicesSession::clientAddress() const
+{
+    LPWSTR buffer;
+    DWORD bytesReturned;
+    PWTS_CLIENT_ADDRESS address;
+    std::wstringstream ss;
+
+    BOOL result = WTSQuerySessionInformationW(_server, _sessionId, WTSClientAddress, &buffer, &bytesReturned);
+    if (!result) {
+        throw Wexception(GetLastError(), L"query client address");
+    }
+
+    address = (PWTS_CLIENT_ADDRESS)buffer;
+
+    switch (address->AddressFamily)
+    {
+    case AF_INET:
+        ss << address->Address[2] << L'.' << address->Address[3] << L'.' << address->Address[4] << L'.' << address->Address[5];
+        WTSFreeMemory(buffer);
+        break;
+    case AF_INET6:
+        ss << std::hex;
+        for (int i = 2; i < 18; i++) {
+            if (i != 2 && i % 2 == 0) {
+                ss << L':';
+            }
+            ss << std::setw(2) << std::setfill(L'0') << address->Address[i];
+        }
+        WTSFreeMemory(buffer);
+        break;
+    default:
+        throw Wexception(L"unknown address");
+    }
+
+    return ss.str();
 }

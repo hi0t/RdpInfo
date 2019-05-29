@@ -25,4 +25,4 @@ add_library(${PROJECT_NAME} SHARED
     src/Wexception.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} ws2_32)
+target_link_libraries(${PROJECT_NAME} ws2_32 Wtsapi32)

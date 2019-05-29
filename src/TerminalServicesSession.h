@@ -9,7 +9,7 @@ public:
     TerminalServicesSession();
     std::wstring remoteAddress() const;
     static bool isRemoteSession();
-
+    std::wstring clientAddress() const;
 private:
     HANDLE _server;
     DWORD _sessionId;

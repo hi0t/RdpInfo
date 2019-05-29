@@ -231,3 +231,13 @@ bool RdpInfo::getRemoteAddress(tVariant *propVal)
     }
     return true;
 }
+
+bool RdpInfo::getClientAddress(tVariant *propVal)
+{
+    try {
+        wstringToVariant(_terminalSession.clientAddress(), propVal);
+    } catch (const Wexception &) {
+        TV_VT(propVal) = VTYPE_EMPTY;
+    }
+    return true;
+}

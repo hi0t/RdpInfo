@@ -50,7 +50,8 @@ private:
 
     const std::vector<Property> _properties = {
         { L"IsRemoteSession", L"УдаленнаяСессия", std::bind(&RdpInfo::getIsRemoteSession, this, std::placeholders::_1), { } },
-        { L"RemoteAddress", L"УдаленныйАдрес", std::bind(&RdpInfo::getRemoteAddress, this, std::placeholders::_1), { } }
+        { L"RemoteAddress", L"УдаленныйАдрес", std::bind(&RdpInfo::getRemoteAddress, this, std::placeholders::_1), { } },
+        { L"ClientAddress", L"АдресКлиента", std::bind(&RdpInfo::getClientAddress, this, std::placeholders::_1), { } }
     };
 
     IAddInDefBase *_connect;
@@ -62,4 +63,5 @@ private:
     void addError(unsigned short wcode, const std::wstring &source, const std::wstring &descr, int ec) const;
     bool getIsRemoteSession(tVariant *propVal);
     bool getRemoteAddress(tVariant *propVal);
+    bool getClientAddress(tVariant *propVal);
 };
