@@ -241,3 +241,23 @@ bool RdpInfo::getClientAddress(tVariant *propVal)
     }
     return true;
 }
+
+bool RdpInfo::getUserName(tVariant *propVal)
+{
+    try {
+        wstringToVariant(_terminalSession.userName(), propVal);
+    } catch (const Wexception &) {
+        TV_VT(propVal) = VTYPE_EMPTY;
+    }
+    return true;
+}
+
+bool RdpInfo::getClientName(tVariant *propVal)
+{
+    try {
+        wstringToVariant(_terminalSession.clientName(), propVal);
+    } catch (const Wexception &) {
+        TV_VT(propVal) = VTYPE_EMPTY;
+    }
+    return true;
+}

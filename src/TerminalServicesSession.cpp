@@ -137,3 +137,35 @@ std::wstring TerminalServicesSession::clientAddress() const
 
     return ss.str();
 }
+
+std::wstring TerminalServicesSession::userName() const
+{
+    LPWSTR buffer;
+    DWORD bytesReturned;
+
+    BOOL result = WTSQuerySessionInformationW(_server, _sessionId, WTSUserName, &buffer, &bytesReturned);
+    if (!result) {
+        throw Wexception(GetLastError(), L"query user name");
+    }
+
+    std::wstring name(buffer);
+    WTSFreeMemory(buffer);
+
+    return name;
+}
+
+std::wstring TerminalServicesSession::clientName() const
+{
+    LPWSTR buffer;
+    DWORD bytesReturned;
+
+    BOOL result = WTSQuerySessionInformationW(_server, _sessionId, WTSClientName, &buffer, &bytesReturned);
+    if (!result) {
+        throw Wexception(GetLastError(), L"query client name");
+    }
+
+    std::wstring name(buffer);
+    WTSFreeMemory(buffer);
+
+    return name;
+}

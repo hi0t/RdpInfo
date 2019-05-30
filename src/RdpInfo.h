@@ -51,7 +51,9 @@ private:
     const std::vector<Property> _properties = {
         { L"IsRemoteSession", L"УдаленнаяСессия", std::bind(&RdpInfo::getIsRemoteSession, this, std::placeholders::_1), { } },
         { L"RemoteAddress", L"УдаленныйАдрес", std::bind(&RdpInfo::getRemoteAddress, this, std::placeholders::_1), { } },
-        { L"ClientAddress", L"АдресКлиента", std::bind(&RdpInfo::getClientAddress, this, std::placeholders::_1), { } }
+        { L"ClientAddress", L"АдресКлиента", std::bind(&RdpInfo::getClientAddress, this, std::placeholders::_1), { } },
+        { L"UserName", L"Пользователь", std::bind(&RdpInfo::getUserName, this, std::placeholders::_1), { } },
+        { L"ClientName", L"УдаленныйКлиент", std::bind(&RdpInfo::getClientName, this, std::placeholders::_1), { } },
     };
 
     IAddInDefBase *_connect;
@@ -64,4 +66,6 @@ private:
     bool getIsRemoteSession(tVariant *propVal);
     bool getRemoteAddress(tVariant *propVal);
     bool getClientAddress(tVariant *propVal);
+    bool getUserName(tVariant *propVal);
+    bool getClientName(tVariant *propVal);
 };
